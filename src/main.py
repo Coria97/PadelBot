@@ -5,6 +5,7 @@ import schedule
 from src.config import CHECK_INTERVAL 
 from src.logger import setup_logger
 from src.scraper import PadelScraper
+from src.telegram_notifier import TelegramNotifier
 
 logger = setup_logger(__name__)
 
@@ -21,6 +22,10 @@ async def main():
     Main function that schedules and runs the checks
     """
     logger.info("Starting PadelBot...")
+
+    # Initialize the Telegram notifier
+    telegram_notifier = TelegramNotifier()
+    asyncio.create_task(telegram_notifier.start_polling())
 
     # Schedule the initial check
     await run_check()
