@@ -5,39 +5,38 @@ import os
 
 def setup_logger(name):
     """
-    Configura y retorna un logger con el nombre especificado
-    
+    Config and returns a logger with the specified name.
     Args:
-        name (str): Nombre del logger
-        
+        name (str): Name of the logger
+
     Returns:
-        logging.Logger: Logger configurado
+        logging.Logger: Configured logger
     """
-    # Crear el logger
+    # Create the logger
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-    
-    # Evitar duplicación de handlers
+
+    # Avoid duplicate handlers
     if logger.handlers:
         return logger
-    
-    # Crear el directorio de logs si no existe
+
+    # Create the logs directory if it doesn't exist
     log_dir = 'logs'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
-    # Configurar el formato
+    # Configure the format
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    
-    # Handler para consola
+
+    # Handler for console
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
-    
-    # Handler para archivo
+
+    # Handler for file
     file_handler = RotatingFileHandler(
         filename=os.path.join(log_dir, 'padelbot.log'),
         maxBytes=1024 * 1024,  # 1MB

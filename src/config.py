@@ -1,21 +1,18 @@
-"""
-Configuración del proyecto
-"""
 import os
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
+# load environment variables from .env file
 load_dotenv()
 
-# Configuración de la URL (se actualizará cuando se proporcione la página)
+# Configuration of the URL (will be updated when the page is provided)
 BASE_URL = os.getenv('BASE_URL', '')
 
-# Configuración de intervalos de monitoreo (en minutos)
+# Configuration of monitoring intervals (in minutes)
 CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '5'))
 
-# Configuración de notificaciones
+# Configuration of notifications
 ENABLE_NOTIFICATIONS = os.getenv('ENABLE_NOTIFICATIONS', 'True').lower() == 'true'
 
-# Configuración de Telegram
+# Configuration of Telegram
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '') 

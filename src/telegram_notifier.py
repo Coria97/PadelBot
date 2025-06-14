@@ -15,10 +15,10 @@ class TelegramNotifier:
 
     async def send_notification(self, message):
         """
-        Envía una notificación a través de Telegram
+        send a message to the Telegram chat
         
         Args:
-            message (str): Mensaje a enviar
+            message (str): message to send
         """
         try:
             await self.bot.send_message(
@@ -27,16 +27,15 @@ class TelegramNotifier:
                 parse_mode='HTML',
                 disable_notification=False
             )
-            logger.info("Notificación enviada exitosamente a Telegram")
+            logger.info("Notification sent successfully to Telegram chat.")
         except TelegramError as e:
-            logger.error(f"Error al enviar notificación a Telegram: {str(e)}")
+            logger.error(f"Error when send a notification: {str(e)}")
 
     async def notify_available_slots(self, available_slots):
         """
-        Notifica sobre los turnos disponibles después de las 17:00 horas
-        
+        Notify about available slots
         Args:
-            available_slots (list): Lista de turnos disponibles
+            available_slots (list): List of available slots
         """
         if not available_slots:
             return

@@ -10,25 +10,25 @@ logger = setup_logger(__name__)
 
 async def run_check():
     """
-    Ejecuta una verificación de disponibilidad
+    Executes the availability check using PadelScraper
     """
-    logger.info("Iniciando verificación de disponibilidad...")
+    logger.info("Starting availability check...")
     scraper = PadelScraper()
     await scraper.check_availability()
 
 async def main():
     """
-    Función principal que programa y ejecuta las verificaciones
+    Main function that schedules and runs the checks
     """
-    logger.info("Iniciando PadelBot...")
-    
-    # Programar la verificación inicial
+    logger.info("Starting PadelBot...")
+
+    # Schedule the initial check
     await run_check()
-    
-    # Programar verificaciones periódicas
+
+    # Schedule periodic checks
     schedule.every(CHECK_INTERVAL).minutes.do(lambda: asyncio.run(run_check()))
-    
-    # Mantener el programa en ejecución
+
+    # Keep the program running
     while True:
         schedule.run_pending()
         await asyncio.sleep(1)
