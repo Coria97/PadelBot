@@ -1,42 +1,32 @@
-import time
 import asyncio
-import schedule
-
-from src.config import CHECK_INTERVAL 
 from src.logger import setup_logger
-from src.scraper import PadelScraper
 from src.telegram_notifier import TelegramNotifier
+from telegram import Update
 
 logger = setup_logger(__name__)
 
-async def run_check():
+def main():
     """
-    Executes the availability check using PadelScraper
-    """
-    logger.info("Starting availability check...")
-    scraper = PadelScraper()
-    await scraper.check_availability()
-
-async def main():
-    """
-    Main function that schedules and runs the checks
+    Main function that runs the Telegram bot
     """
     logger.info("Starting PadelBot...")
+    
+    try:
+        # Initialize the Telegram notifier
+        telegram_notifier = TelegramNotifier()
 
-    # Initialize the Telegram notifier
-    telegram_notifier = TelegramNotifier()
-    asyncio.create_task(telegram_notifier.start_polling())
+        # Start the bot (this will block until the bot is stopped)
+        telegram_notifier.application.run_polling(allowed_updates=Update.ALL_TYPES)
 
-    # Schedule the initial check
-    await run_check()
-
-    # Schedule periodic checks
-    schedule.every(CHECK_INTERVAL).minutes.do(lambda: asyncio.run(run_check()))
-
-    # Keep the program running
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(1)
+    except Exception as e:
+        logger.error(f"Fatal error: {str(e)}")
+        raise
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {str(e)}")
+        raise 

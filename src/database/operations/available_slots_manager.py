@@ -1,11 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import os
+from src.logger import setup_logger
 
 from src.database.models.available_slots_model import Base, AvailableSlot
 
-# Create the SQLite database
-engine = create_engine('sqlite:///padel_slots.db')
+logger = setup_logger(__name__)
+
+# Create the SQLite database with a relative path
+db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'padel_slots.db')
+engine = create_engine(f'sqlite:///{db_path}')
 
 # Create all tables
 Base.metadata.create_all(engine)
@@ -23,12 +28,13 @@ class AvailableSlotsManager:
         """
         session = self.Session()
         
-        # Delete all existing records
-        session.query(AvailableSlot).delete()
-        session.commit()
-        
-        # Save the new slots
         try:
+            # Delete all existing records
+            session.query(AvailableSlot).delete()
+            session.commit()
+            logger.info(f"Deleted existing records from database")
+            
+            # Save the new slots
             for slot in slots:
                 # Convert the slot to an AvailableSlot object
                 db_slot = AvailableSlot(
@@ -39,8 +45,10 @@ class AvailableSlotsManager:
                 )
                 session.add(db_slot)
             session.commit()
+            logger.info(f"Successfully saved {len(slots)} slots to database")
         except Exception as e:
             session.rollback()
+            logger.error(f"Error saving slots to database: {str(e)}")
             raise e
         finally:
             session.close()

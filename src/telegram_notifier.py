@@ -69,12 +69,6 @@ class TelegramNotifier:
                 "Por favor, intenta nuevamente más tarde."
             )
 
-    async def start_polling(self):
-        """Inicia el polling del bot"""
-        await self.application.initialize()
-        await self.application.start()
-        await self.application.run_polling()
-
     async def send_notification(self, message):
         """
         send a message to the Telegram chat

@@ -52,4 +52,4 @@ Thumbs.db
 htmlcov/ 
 
 # Database
-*.db
+*.db 
