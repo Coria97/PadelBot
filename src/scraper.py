@@ -6,7 +6,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 
 from bs4 import BeautifulSoup
 
@@ -15,6 +14,7 @@ from datetime import datetime, timedelta
 from src.logger import setup_logger
 from src.config import BASE_URL, ENABLE_NOTIFICATIONS
 from src.telegram_notifier import TelegramNotifier
+from src.database.operations import available_slots_manager
 
 logger = setup_logger(__name__)
 
@@ -126,7 +126,7 @@ class PadelScraper:
             
             if available_slots:
                 logger.info(f"Found {len(available_slots)} available slots:")
-                await self.notify_availability(available_slots)
+                available_slots_manager.save_slots(available_slots)
             else:
                 logger.info("No available slots found.")
 
