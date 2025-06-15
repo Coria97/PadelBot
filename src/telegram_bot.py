@@ -6,7 +6,7 @@ from .config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 logger = setup_logger(__name__)
 
-class TelegramNotifier:
+class TelegramBot:
     def __init__(self):
         # Initialize the bot
         self.bot = Bot(token=TELEGRAM_BOT_TOKEN)

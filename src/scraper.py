@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 from src.logger import setup_logger
 from src.config import BASE_URL, ENABLE_NOTIFICATIONS
-from src.telegram_notifier import TelegramNotifier
+from src.telegram_bot import TelegramBot
 from src.database.operations import available_slots_manager
 
 logger = setup_logger(__name__)
@@ -50,7 +50,7 @@ class PadelScraper:
             logger.info("ChromeDriver initialized successfully.")
             
             # Initialize the Telegram notifier
-            self.telegram_notifier = TelegramNotifier()
+            self.telegram_notifier = TelegramBot()
             
         except Exception as e:
             logger.error(f"Error when initializing ChromeDriver: {str(e)}")

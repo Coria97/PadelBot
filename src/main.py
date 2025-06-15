@@ -1,6 +1,6 @@
 import asyncio
 from src.logger import setup_logger
-from src.telegram_notifier import TelegramNotifier
+from src.telegram_bot import TelegramBot
 from telegram import Update
 
 logger = setup_logger(__name__)
@@ -13,7 +13,7 @@ def main():
     
     try:
         # Initialize the Telegram notifier
-        telegram_notifier = TelegramNotifier()
+        telegram_notifier = TelegramBot()
 
         # Start the bot (this will block until the bot is stopped)
         telegram_notifier.application.run_polling(allowed_updates=Update.ALL_TYPES)
