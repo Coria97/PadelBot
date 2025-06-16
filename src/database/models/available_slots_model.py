@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+
 from datetime import datetime
 
-Base = declarative_base()
+from src.database.models.base_model import Base
+
+
 
 class AvailableSlot(Base):
     __tablename__ = 'available_slots'

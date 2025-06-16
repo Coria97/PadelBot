@@ -1,8 +1,14 @@
+from datetime import datetime
+
+from typing import Set
+
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from telegram.error import TelegramError
-from .logger import setup_logger
-from .config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+from src.logger import setup_logger
+from src.config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from src.database.operations import available_slots_manager, subscription_manager
 
 logger = setup_logger(__name__)
 
@@ -10,7 +16,7 @@ class TelegramBot:
     def __init__(self):
         # Initialize the bot
         self.bot = Bot(token=TELEGRAM_BOT_TOKEN)
-        self.chat_id = TELEGRAM_CHAT_ID
+        self.chat_ids: Set[int] = {TELEGRAM_CHAT_ID}
         self.application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
         
         # Register the commands
@@ -18,9 +24,12 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("status", self.status_command))
         self.application.add_handler(CommandHandler("check", self.check_command))
-
+        self.application.add_handler(CommandHandler("subscribe", self.subscribe_command))
+    
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Manage the /start command"""
+        chat_id = update.effective_chat.id
+        self.chat_ids.add(chat_id)
         await update.message.reply_text(
             "¡Hola! Soy PadelBot 🤖\n"
             "Te ayudaré a monitorear los turnos disponibles.\n"
@@ -57,9 +66,21 @@ class TelegramBot:
                     "Ejemplo: /check 25/03 18:00"
                 )
                 return
-            
-            message = "❌ No hay turnos disponibles para esa fecha y hora."
 
+            # Get the date and time
+            date_str, time_str = context.args
+            date = datetime.strptime(date_str, "%d/%m")
+            time = datetime.strptime(time_str, "%H:%M")
+
+            # Get the available slots
+            available_slots = available_slots_manager.get_available_slots_by_day_and_hour(date, time)
+
+            # Notify the user
+            if available_slots:
+                message = self.create_message(available_slots)
+            else:
+                message = "❌ No hay turnos disponibles para esa fecha y hora."
+            
             await update.message.reply_text(message, parse_mode='HTML')
 
         except Exception as e:
@@ -69,25 +90,49 @@ class TelegramBot:
                 "Por favor, intenta nuevamente más tarde."
             )
 
-    async def send_notification(self, message):
+    async def subscribe_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manage the /subscribe command"""
+        chat_id = update.effective_chat.id
+        self.chat_ids.add(chat_id)
+
+        if not context.args or len(context.args) != 2:
+            await update.message.reply_text(
+                "❌ Formato incorrecto. Por favor usa:\n"
+                "/subscribe DD/MM HH:MM\n"
+                "Ejemplo: /subscribe 25/03 18:00"
+            )
+            return
+        
+        # Get the date and time
+        date_str, time_str = context.args
+        date = datetime.strptime(date_str, "%d/%m")
+        time = datetime.strptime(time_str, "%H:%M")
+
+        # Subscribe to the available slots
+        subscription_manager.add_subscription(date, time, chat_id)
+        await update.message.reply_text("Te has suscrito al monitoreo de turnos.")
+
+
+    async def send_notification(self, message, chat_id):
         """
-        send a message to the Telegram chat
+        Send a message to a specific Telegram chat
         
         Args:
             message (str): message to send
+            chat_id (int): target chat ID
         """
         try:
             await self.bot.send_message(
-                chat_id=self.chat_id,
+                chat_id=chat_id,
                 text=message,
                 parse_mode='HTML',
                 disable_notification=False
             )
-            logger.info("Notification sent successfully to Telegram chat.")
+            logger.info(f"Notification successfully sent to chat {chat_id}")
         except TelegramError as e:
-            logger.error(f"Error when send a notification: {str(e)}")
+            logger.error(f"Error sending notification to chat {chat_id}: {str(e)}")
 
-    async def notify_available_slots(self, available_slots):
+    async def notify_available_slots(self, available_slots, chat_id):
         """
         Notify about available slots
         Args:
@@ -95,14 +140,14 @@ class TelegramBot:
         """
         if not available_slots:
             return
+        message = self.create_message(available_slots)
+        await self.send_notification(message, chat_id)
 
+    def create_message(self, available_slots):
         message = "🎾 <b>¡Turnos disponibles encontrados!</b>\n\n"
-        
         for slot in available_slots:
             message += f"📅 <b>Fecha:</b> {slot['fecha']}\n"
             message += f"⏰ <b>Hora:</b> {slot['hora']}\n"
             message += f"🏸 <b>Cancha:</b> {slot['cancha']}\n"
-            message += f"ℹ️ <b>Características:</b> {slot['caracteristicas']}\n"
             message += "➖➖➖➖➖➖➖➖➖➖\n"
-
-        await self.send_notification(message) 
+        return message

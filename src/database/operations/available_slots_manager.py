@@ -1,10 +1,14 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import os
-from src.logger import setup_logger
 
-from src.database.models.available_slots_model import Base, AvailableSlot
+from datetime import datetime
+
+from src.logger import setup_logger
+from src.database.models.base_model import Base
+from src.database.models.available_slots_model import AvailableSlot
+from src.database.models.subscription_model import Subscription
 
 logger = setup_logger(__name__)
 
