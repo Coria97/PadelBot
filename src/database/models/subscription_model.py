@@ -11,8 +11,8 @@ class Subscription(Base):
 
     id = Column(Integer, primary_key=True)
     chat_id = Column(String, nullable=False)
-    day = Column(DateTime, nullable=False)
-    hour = Column(DateTime, nullable=False)
+    day = Column(String, nullable=False)
+    hour = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
 
     def __repr__(self):

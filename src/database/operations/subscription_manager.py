@@ -13,7 +13,7 @@ from src.database.models.subscription_model import Subscription
 logger = setup_logger(__name__)
 
 # Create the SQLite database with an absolute path
-db_path = os.path.join('/app/data', 'padel_slots.db')
+db_path = os.path.join('/app/data', 'padel_bot.db')
 engine = create_engine(f'sqlite:///{db_path}')
 
 # Create all tables
@@ -22,6 +22,7 @@ Base.metadata.create_all(engine)
 class SubscriptionManager:
     def __init__(self):
         self.Session = sessionmaker(bind=engine)
+        self.session = self.Session()
 
     def add_subscription(self, day, hour, chat_id):
         """

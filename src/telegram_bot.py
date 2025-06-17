@@ -105,15 +105,31 @@ class TelegramBot:
             )
             return
         
-        # Get the date and time
-        date_str, time_str = context.args
-        date = datetime.strptime(date_str, "%d/%m")
-        time = datetime.strptime(time_str, "%H:%M")
+        try:
+            # Get the date and time
+            date_str, time_str = context.args
+            
+            # Add current year to the date
+            current_year = datetime.now().year
+            date_with_year = f"{date_str}/{current_year}"
 
-        # Subscribe to the available slots
-        subscription_manager.add_subscription(date, time, chat_id)
-        await update.message.reply_text("Te has suscrito al monitoreo de turnos.")
-
+            # Subscribe to the available slots
+            subscription_manager.add_subscription(date_with_year, time_str, chat_id)
+            await update.message.reply_text(
+                f"✅ Te has suscrito al monitoreo de turnos para el {date_str} a las {time_str}."
+            )
+        except ValueError as e:
+            await update.message.reply_text(
+                "❌ Formato de fecha u hora incorrecto. Por favor usa:\n"
+                "/subscribe DD/MM HH:MM\n"
+                "Ejemplo: /subscribe 25/03 18:00"
+            )
+        except Exception as e:
+            logger.error(f"Error en el comando subscribe: {str(e)}")
+            await update.message.reply_text(
+                "❌ Ocurrió un error al procesar tu suscripción.\n"
+                "Por favor, intenta nuevamente más tarde."
+            )
 
     async def send_notification(self, message, chat_id):
         """
