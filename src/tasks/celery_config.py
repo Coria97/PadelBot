@@ -14,4 +14,8 @@ celery_app.conf.beat_schedule = {
         'task': 'src.tasks.check_availability.check_availability',
         'schedule': CHECK_INTERVAL * 60.0,  # Convert minutes to seconds
     },
+    'check-subscriptions': {
+        'task': 'src.tasks.check_subscription.check_subscriptions',
+        'schedule': 200.0,  # 200 seconds
+    },
 } 
