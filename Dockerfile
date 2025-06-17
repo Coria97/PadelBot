@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     xvfb \
     curl \
+    sqlite3 \
     libxi6 \
     libgconf-2-4 \
     libnss3 \

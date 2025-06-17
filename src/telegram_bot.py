@@ -69,11 +69,13 @@ class TelegramBot:
 
             # Get the date and time
             date_str, time_str = context.args
-            date = datetime.strptime(date_str, "%d/%m")
-            time = datetime.strptime(time_str, "%H:%M")
-
+            
+            # Add current year to the date
+            current_year = datetime.now().year
+            date_with_year = f"{date_str}/{current_year}"
+            
             # Get the available slots
-            available_slots = available_slots_manager.get_available_slots_by_day_and_hour(date, time)
+            available_slots = available_slots_manager.get_available_slots_by_day_and_hour(date_with_year, time_str)
 
             # Notify the user
             if available_slots:

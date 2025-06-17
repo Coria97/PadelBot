@@ -12,8 +12,8 @@ from src.database.models.subscription_model import Subscription
 
 logger = setup_logger(__name__)
 
-# Create the SQLite database with a relative path
-db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'padel_slots.db')
+# Create the SQLite database with an absolute path
+db_path = os.path.join('/app/data', 'padel_slots.db')
 engine = create_engine(f'sqlite:///{db_path}')
 
 # Create all tables

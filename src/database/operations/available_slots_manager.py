@@ -3,7 +3,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from src.logger import setup_logger
 from src.database.models.base_model import Base
@@ -12,8 +12,8 @@ from src.database.models.subscription_model import Subscription
 
 logger = setup_logger(__name__)
 
-# Create the SQLite database with a relative path
-db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'padel_slots.db')
+# Create the SQLite database with an absolute path
+db_path = os.path.join('/app/data', 'padel_slots.db')
 engine = create_engine(f'sqlite:///{db_path}')
 
 # Create all tables
@@ -48,6 +48,8 @@ class AvailableSlotsManager:
                     attributes=slot['attributes']
                 )
                 session.add(db_slot)
+                logger.debug(f"slot: {db_slot}")
+
             session.commit()
             logger.info(f"Successfully saved {len(slots)} slots to database")
         except Exception as e:
@@ -62,7 +64,7 @@ class AvailableSlotsManager:
         Get available slots for a specific day and hour range
         
         Args:
-            day (str): Day in format DD/MM
+            day (str): Day in format DD/MM/YYYY
             hour (str): Hour in format HH:MM
             
         Returns:
@@ -70,27 +72,32 @@ class AvailableSlotsManager:
         """
         session = self.Session()
         try:
-            # Convert hour string to datetime for comparison
-            target_hour = datetime.strptime(hour, '%H:%M').time()
-            
-            # Add current year to the day
-            current_year = datetime.now().year
-            day_with_year = f"{day}/{current_year}"
-            
             # Get slots for the specified day
             slots = session.query(AvailableSlot) \
-                .filter(AvailableSlot.day == day_with_year) \
+                .filter(AvailableSlot.day == day) \
                 .all()
-                
+
             # Filter slots by hour range (3 hours window)
             filtered_slots = []
+            target_hour = datetime.strptime(hour, '%H:%M').time()
+            
+            # Calculate end hour (3 hours after target hour)
+            end_hour = datetime.combine(datetime.today(), target_hour) + timedelta(hours=3)
+            end_hour = end_hour.time()
+            
             for slot in slots:
                 slot_hour = datetime.strptime(slot.hour, '%H:%M').time()
                 # Check if slot is within 3 hours window
-                if target_hour <= slot_hour <= datetime.strptime('22:00', '%H:%M').time():
-                    filtered_slots.append(slot)
-                    
+                if target_hour <= slot_hour <= end_hour:
+                    filtered_slots.append({
+                        'fecha': slot.day,
+                        'hora': slot.hour,
+                        'cancha': slot.court
+                    })
             return filtered_slots
+        except Exception as e:
+            logger.error(f"Error getting available slots: {str(e)}")
+            raise e
         finally:
             session.close()
 
