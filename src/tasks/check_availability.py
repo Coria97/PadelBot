@@ -1,25 +1,9 @@
-from celery import Celery
 import asyncio
-from .scraper import PadelScraper
-from .config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, CHECK_INTERVAL
-from .logger import setup_logger
+from ..scraper import PadelScraper
+from ..logger import setup_logger
+from .celery_config import celery_app
 
 logger = setup_logger(__name__)
-
-# Celery configuration
-celery_app = Celery(
-    'padelbot',
-    broker=CELERY_BROKER_URL,
-    backend=CELERY_RESULT_BACKEND
-)
-
-# Celery configuration
-celery_app.conf.beat_schedule = {
-    'check-availability': {
-        'task': 'src.tasks.check_availability',
-        'schedule': CHECK_INTERVAL * 60.0,  # Convert minutes to seconds
-    },
-}
 
 @celery_app.task
 def check_availability():
