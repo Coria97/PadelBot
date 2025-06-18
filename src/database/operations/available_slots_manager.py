@@ -48,7 +48,6 @@ class AvailableSlotsManager:
                     attributes=slot['attributes']
                 )
                 session.add(db_slot)
-                logger.debug(f"slot: {db_slot}")
 
             session.commit()
             logger.info(f"Successfully saved {len(slots)} slots to database")
@@ -94,6 +93,10 @@ class AvailableSlotsManager:
                         'hora': slot.hour,
                         'cancha': slot.court
                     })
+            
+            # Sort slots by hour
+            filtered_slots.sort(key=lambda x: x['hora'])
+            
             return filtered_slots
         except Exception as e:
             logger.error(f"Error getting available slots: {str(e)}")

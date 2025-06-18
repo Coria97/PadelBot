@@ -15,6 +15,9 @@ def setup_logger(name):
     # Create the logger
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
+    
+    # Prevent propagation to root logger to avoid duplicates
+    logger.propagate = False
 
     # Avoid duplicate handlers
     if logger.handlers:
