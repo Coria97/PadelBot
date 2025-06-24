@@ -24,7 +24,7 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("status", self.status_command))
         self.application.add_handler(CommandHandler("check", self.check_command))
-        self.application.add_handler(CommandHandler("subscribe", self.subscribe_command))
+        self.application.add_handler(CommandHandler("notify", self.notify_command))
     
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Manage the /start command"""
@@ -44,6 +44,8 @@ class TelegramBot:
             "/help - Mostrar esta ayuda\n"
             "/status - Ver el estado actual del monitoreo\n"
             "/check DD/MM HH:MM - Verificar disponibilidad para una fecha y hora específica\n"
+            "Ejemplo: /check 25/03 18:00"
+            "/notify DD/MM HH:MM - Deja una suscripción para una fecha y hora específica\n"
             "Ejemplo: /check 25/03 18:00"
         )
         await update.message.reply_text(help_text, parse_mode='HTML')
@@ -92,16 +94,16 @@ class TelegramBot:
                 "Por favor, intenta nuevamente más tarde."
             )
 
-    async def subscribe_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Manage the /subscribe command"""
+    async def notify_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manage the /notify command"""
         chat_id = update.effective_chat.id
         self.chat_ids.add(chat_id)
 
         if not context.args or len(context.args) != 2:
             await update.message.reply_text(
                 "❌ Formato incorrecto. Por favor usa:\n"
-                "/subscribe DD/MM HH:MM\n"
-                "Ejemplo: /subscribe 25/03 18:00"
+                "/notify DD/MM HH:MM\n"
+                "Ejemplo: /notify 25/03 18:00"
             )
             return
         
@@ -113,7 +115,7 @@ class TelegramBot:
             current_year = datetime.now().year
             date_with_year = f"{date_str}/{current_year}"
 
-            # Subscribe to the available slots
+            # notify to the available slots
             subscription_manager.add_subscription(date_with_year, time_str, chat_id)
             await update.message.reply_text(
                 f"✅ Te has suscrito al monitoreo de turnos para el {date_str} a las {time_str}."
@@ -121,14 +123,14 @@ class TelegramBot:
         except ValueError as e:
             await update.message.reply_text(
                 "❌ Formato de fecha u hora incorrecto. Por favor usa:\n"
-                "/subscribe DD/MM HH:MM\n"
-                "Ejemplo: /subscribe 25/03 18:00"
+                "/notify DD/MM HH:MM\n"
+                "Ejemplo: /notify 25/03 18:00"
             )
         except Exception as e:
-            logger.error(f"Error en el comando subscribe: {str(e)}")
+            logger.error(f"Error in the command notify: {str(e)}")
             await update.message.reply_text(
-                "❌ Ocurrió un error al procesar tu suscripción.\n"
-                "Por favor, intenta nuevamente más tarde."
+                "❌ An error occurred while processing your subscription.\n"
+                "Please try again later."
             )
 
     async def send_notification(self, message, chat_id):
